@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+backend/.venv/
+# Local database, secrets and trained models
+backend/data/*.db
+backend/data/*.db-*
+backend/data/.secret_key
+backend/data/*.joblib
+# Frontend
+frontend/node_modules/
+frontend/dist/
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# User-uploaded photos (created at runtime)
+backend/data/uploads/
