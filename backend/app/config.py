@@ -10,6 +10,15 @@ DATA_DIR.mkdir(exist_ok=True)
 # SQLite by default so the project runs with zero setup.
 # For PostgreSQL set e.g. DATABASE_URL=postgresql+psycopg://user:pass@localhost/ecobyte
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{(DATA_DIR / 'ecobyte.db').as_posix()}")
+# Hosting providers (Render, Heroku, Railway) hand out postgres:// URLs; SQLAlchemy needs the psycopg driver name.
+for _prefix in ("postgres://", "postgresql://"):
+    if DATABASE_URL.startswith(_prefix):
+        DATABASE_URL = "postgresql+psycopg://" + DATABASE_URL[len(_prefix):]
+
+# Production: set the first admin's login here and turn the demo accounts off.
+ADMIN_EMAIL = os.getenv("ECOBYTE_ADMIN_EMAIL", "admin@ecobyte.app")
+ADMIN_PASSWORD = os.getenv("ECOBYTE_ADMIN_PASSWORD", "Admin@123")
+DEMO_ACCOUNTS = os.getenv("ECOBYTE_DEMO_ACCOUNTS", "1") != "0"
 
 
 def _load_secret() -> str:

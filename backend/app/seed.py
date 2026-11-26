@@ -23,7 +23,7 @@ import sys
 from datetime import date, datetime, time, timedelta
 
 from .auth import hash_password
-from .config import HISTORICAL_XLSX, MEAL_TYPES, MODEL_PATH
+from .config import ADMIN_EMAIL, ADMIN_PASSWORD, DEMO_ACCOUNTS, HISTORICAL_XLSX, MEAL_TYPES, MODEL_PATH
 from .database import Base, SessionLocal, engine
 from .models import AppSettings, CalendarEvent, Meal, MealSlot, MessSubscription, Product, Reward, User
 from .services.mess import PASS_DAYS
@@ -31,7 +31,7 @@ from .services import prediction as P
 from .services.importer import import_excel
 from .services.synthetic import SIDES, academic_calendar, main_dish_for
 
-DEMO_ADMIN = ("admin@ecobyte.app", "Admin@123")
+DEMO_ADMIN = (ADMIN_EMAIL, ADMIN_PASSWORD)  # set ECOBYTE_ADMIN_EMAIL / _PASSWORD in production
 DEMO_STUDENT_PASSWORD = "Student@123"
 DEMO_STUDENTS = [
     ("student@ecobyte.app", "Aarav Kulkarni", "STU2025", "AI & Data Science", 3),
@@ -55,7 +55,7 @@ def log(msg: str):
 def create_base(db):
     db.add(AppSettings())
     db.add(User(role="admin", email=DEMO_ADMIN[0], name="Canteen Admin", password_hash=hash_password(DEMO_ADMIN[1])))
-    for email, name, code, dept, year in DEMO_STUDENTS:
+    for email, name, code, dept, year in (DEMO_STUDENTS if DEMO_ACCOUNTS else []):
         db.add(User(role="student", email=email, name=name, password_hash=hash_password(DEMO_STUDENT_PASSWORD),
                     student_code=code, department=dept, year_of_study=year, is_demo=True))
 
@@ -109,6 +109,8 @@ def seed_passes(db, today: date):
     admin = db.query(User).filter_by(role="admin").first()
     for email, (ptype, offset) in plan.items():
         u = db.query(User).filter_by(email=email).first()
+        if u is None:  # demo accounts turned off
+            continue
         start = today + timedelta(days=offset)
         days = PASS_DAYS[ptype]
         db.add(MessSubscription(user_id=u.id, pass_type=ptype, purchase_date=start - timedelta(days=1), start_date=start,
@@ -159,8 +161,11 @@ def run(reset: bool = False, demo: bool = False):
             from .demo_data import add_demo_activity
             log(f"Demo activity: {add_demo_activity(db)}")
         P.invalidate()
-        log(f"Done. Admin: {DEMO_ADMIN[0]} / {DEMO_ADMIN[1]}")
-        log(f"Students ({DEMO_STUDENT_PASSWORD}): " + ", ".join(e for e, *_ in DEMO_STUDENTS))
+        if DEMO_ACCOUNTS:
+            log(f"Done. Admin: {DEMO_ADMIN[0]} / {DEMO_ADMIN[1]}")
+            log(f"Students ({DEMO_STUDENT_PASSWORD}): " + ", ".join(e for e, *_ in DEMO_STUDENTS))
+        else:
+            log(f"Done. Admin: {DEMO_ADMIN[0]} (password from ECOBYTE_ADMIN_PASSWORD). No demo student accounts.")
     finally:
         db.close()
 

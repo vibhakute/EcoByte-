@@ -10,7 +10,6 @@ const FEATURES = [
   [TrendingUp, 'Predict', 'Meal Demand'], [Recycle, 'Reduce', 'Food Waste'], [Users, 'Track', 'Attendance'],
   [Gift, 'Earn', 'Rewards'], [HandHeart, 'Donate', 'Surplus Food'],
 ]
-const DEMO = { student: ['STU2025', 'Student@123'], admin: ['admin@ecobyte.app', 'Admin@123'] }
 
 export default function Login({ portal: initial }) {
   const [portal, setPortal] = useState(initial)
@@ -88,8 +87,7 @@ export default function Login({ portal: initial }) {
           <div className="login-or"><span>or</span></div>
           <div className="login-tagline"><Sprout />A Smart Step Towards a Greener Future</div>
           <div className="login-meta">
-            {portal === 'student' && <>New student? <Link to="/register">Create an account</Link> · </>}
-            <button type="button" className="login-link small" onClick={() => { setIdent(DEMO[portal][0]); setPassword(DEMO[portal][1]) }}>Use demo account</button>
+            {portal === 'student' ? <>New student? <Link to="/register">Create an account</Link></> : 'Canteen staff only'}
           </div>
         </form>
       </main>

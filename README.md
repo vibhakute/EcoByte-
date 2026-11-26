@@ -179,6 +179,28 @@ automatically and "Send to NGOs via WhatsApp" opens a pre-filled chat (wa.me) as
   (Meta app secret, Twilio auth token).
 - `python -m tests.whatsapp_test` checks the whole flow against a fake provider (35 checks, no real messages).
 
+## Deploy (Render, free)
+
+GitHub Pages cannot run EcoByte: it only serves static files, and EcoByte needs its Python server and a
+database (that is why a Pages site shows this README). Deploy from GitHub to Render instead:
+
+1. render.com → sign in with GitHub → **New → Blueprint** → choose this repository.
+2. Render reads `render.yaml`: it creates the **ecobyte** web service (built from the `Dockerfile`) and a
+   **PostgreSQL** database, and asks for **ECOBYTE_ADMIN_PASSWORD** (choose a strong password).
+3. Wait for the first build (about 5–10 minutes). The site is then live at `https://ecobyte-xxxx.onrender.com`
+   on any phone or laptop. Every `git push` redeploys automatically.
+4. Sign in as `admin@ecobyte.app` with that password, add students in **Student Management** (with their
+   passwords), give tokens in **Rewards & Coupons**, and set **Settings → Public web address** to the Render URL
+   so NGO WhatsApp links work.
+
+Production settings (environment variables): `DATABASE_URL` (PostgreSQL; `postgres://` URLs are accepted),
+`ECOBYTE_SECRET_KEY`, `ECOBYTE_ADMIN_EMAIL`, `ECOBYTE_ADMIN_PASSWORD`, and `ECOBYTE_DEMO_ACCOUNTS=0` so no demo
+students with known passwords are created. Free-plan notes: the service sleeps after 15 minutes without visits
+(the first visit then takes about a minute), the free database expires after 30 days, and uploaded photos are
+not kept across restarts. Use paid plans for a real launch.
+
+Run the same image locally: `docker build -t ecobyte . && docker run -p 8000:8000 ecobyte`.
+
 ## Architecture
 
 | Layer | Tech |
